@@ -31,29 +31,30 @@ df = pd.read_csv('/content/drive/MyDrive/TP - IA/snic-provincias.csv')
 
 #De esta línea deducimos que son 8880 registros, de 7 columnas
 
-print(df.shape)
+df.shape
 
 #Y de esta podemos observar los tipos de datos de esas 7 columnas. Podemos observar 4 numéricos y 3 categóricos. Podemos observar que delito_snic_id y
 #delito_snic_nombre hacen referencia a la misma columna. Al igual que provincia_id y provincia_nombre
 
-print(df.dtypes)
+df.dtypes
 
 #Analizamos el head y el tail del dataset. Con la información recavada hasta el momento, nos damos cuenta de que podemos rectificar 
 #el tipo de dato de algunas columnas. Por ejemplo, no tiene sentido que cantidad_victimas sea float, o que codigo_delito_snic_id sea 
 #del tipo categórico cuando solo alberga un número.
 
-print(df.head())
-print(df.tail())
+df.head().T
+
+df.tail().T
 
 #Buscamos valores nulos. Observamos que la mayoría de las columnas no contienen valores nulos, excepto cantidad_víctimas.
 
-print(df.info())
+df.info()
 
 #Hacemos un análisis estadístico general del dataset, de las variables numéricas
-print(df.describe(include=[np.number]))
+#df.describe(include=[np.number])
 
 #Y de las variables categóricas:
-print(df.describe(include=['O']))
+df.describe(include='all').T
 
 #Graficamos la cantidad de hechos delictivos totales por año. Para eso agrupamos por año, y de esta agrupación sumamos entre sí la cantidad
 #de cada uno de los distintos tipos de hechos delictivos de cada año.
@@ -69,24 +70,35 @@ plt.ylabel('Cantidad de hechos')
 
 sns.countplot(data=df,x='codigo_delito_snic_nombre')
 
-#Hacemos un gráfico de dispersión por puntos, de la cantidad de totales de hechos distribuidos por provincias. Podemos observar que en Capital Federal
+#Hacemos un gráfico de dispersión por puntos, de la cantidad de totales de hechos distribuidos por provincias. Podemos observar que en Buenos Aires
 #hay un valor excesivamente diferente a los demás, que podría ser considerado un outlier.
 
-cantPorProv = df.groupby('provincia_id')['cantidad_hechos'].sum()
+cantPorProv = df.groupby('provincia_nombre')['cantidad_hechos'].sum()
 sns.scatterplot(x=cantPorProv.index, y=cantPorProv.values, data=cantPorProv)
+#Pasar a barplot
+plt.xticks(rotation=90)
+plt.show()
+
+ #Tasa multiplicada x 1000 / pobl_total de prov.
 
 #Hacemos un análisis de correlación entre las columnas numéricas. Como podemos observar rápidamente en el mapa de calor, la correlación entre todas las 
 #columnas es bastante baja, a excepción de cantidad víctimas y cantidad hechos, que tienen una correlación muy alta, cercana a 1.
 
 #Podemos deducir que al tener una correlación demasiado baja, pero negativa, el aumentar el anio la cantidad de hechos debería disminuir muy gradualmente.
 
-print(df.corr())
-sns.heatmap(df.corr())
+#print(df.corr())
+plt.figure(figsize=(15, 6))
+corr = df.corr()
+sns.heatmap(corr, annot=True, fmt='.0%', cmap='coolwarm')
+plt.show()
+#sns.heatmap(df.corr())
 
 #Mostramos la cantidad de hechos según cada categoría. Habría que buscar la mejor forma de graficar esto con mathplotlib.
 
 cantPorTipoDelito = df.groupby('codigo_delito_snic_nombre')['cantidad_hechos'].sum()
 print(cantPorTipoDelito)
+
+#Gráfica de burbujas
 
 #Graficamos las ocurrencias de cada variable categórica. Acá no importa el conteo, sino ver que no haya errores de escritura en las variables
 #categóricas.
@@ -100,3 +112,5 @@ for col in cols_cat:
   plt.figure(figsize=(8,12))
   col_graf = sns.countplot(data=df, y=col)
   plt.show()
+
+  #Pasar a minúsculas, mayúsculas, y quitar acentos.
